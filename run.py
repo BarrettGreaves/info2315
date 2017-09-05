@@ -114,8 +114,17 @@ def do_register():
     acc = PublicAccount(username, password, rso)
     user_id = acc.get_id()
     db.add_public(acc)
+    db.save()
     return fEngine.load_and_render("registered", user_id=user_id)
 
+@get('/accounts')
+def view_accounts():
+    return str(db)
+
+@get('/reset')
+def reset():
+    db.reset()
+    return fEngine.load_and_render("reset")
 
 @get('/about')
 def about():

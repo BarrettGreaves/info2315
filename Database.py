@@ -8,6 +8,15 @@ class Database:
 	def __init__(self):
 		self.user_lists = {"staff":[], "admin":[], "public":[], "rso":[]}
 
+	def __str__(self):
+		s = ""
+		for key in self.user_lists:
+			s += key + ": "
+			for acc in self.user_lists[key]:
+				s += acc.name + " "
+			s += "</br>"
+		return s
+
 	def account_exists(self, user_id):
 		for user_type in self.user_lists:
 			if any(obj.user_id == user_id for obj in self.user_lists[user_type]):
@@ -68,11 +77,11 @@ class Database:
 				return pickle.load(f)
 		return Database()
 
-	def reset_database():
+	def reset(self):
+		#if logs are persisent, overwrite file rather than removing
 		if os.path.exists(save_name):
 			os.remove(save_name)
-			return True
-		return False
+		self.user_lists = {"staff":[], "admin":[], "public":[], "rso":[]}
 #------------------------------------------------
 
 
