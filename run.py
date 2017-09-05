@@ -2,6 +2,8 @@ from bottle import route, get, run, post, request, redirect, static_file
 from Crypto.Hash import MD5
 import re
 import numpy as np
+from Database import Database
+from Accounts import PublicAccount
 
 #-----------------------------------------------------------------------------
 # This class loads html files from the "template" directory and formats them using Python.
@@ -20,13 +22,13 @@ class FrameEngine:
         file = open(path, 'r')
         text = ""
         for line in file:
-            text+= line
+            text += line
         file.close()
         return text
 
     def simple_render(this, template, **kwargs):
         template = template.format(**kwargs)
-        return  template
+        return template
 
     def render(this, template, **kwargs):
         keys = this.global_renders.copy() #Not the best way to do this, but backwards compatible from PEP448, in Python 3.5+ use keys = {**this.global_renters, **kwargs}
@@ -63,6 +65,8 @@ def serve_js(js):
 # Check the login credentials
 def check_login(username, password):
     login = False
+
+
     if username != "admin": # Wrong Username
         err_str = "Incorrect Username"
         return err_str, login
@@ -76,7 +80,7 @@ def check_login(username, password):
     return login_string, login
     
 #-----------------------------------------------------------------------------
-# Redirect to login
+# Homepage
 @route('/')
 @route('/home')
 def index():
@@ -98,6 +102,21 @@ def do_login():
     else:
         return fEngine.load_and_render("invalid", reason=err_str)
 
+@get('/register')
+def register():
+    return fEngine.load_and_render("register")
+
+@post('/register')
+def do_register():
+    username = request.forms.get('username')
+    password = "{}".format(request.forms.get('password'))
+    rso = request.forms.get('rso')
+    acc = PublicAccount(username, password, rso)
+    user_id = acc.get_id()
+    db.add_public(acc)
+    return fEngine.load_and_render("registered", user_id=user_id)
+
+
 @get('/about')
 def about():
     garble = ["leverage agile frameworks to provide a robust synopsis for high level overviews.", 
@@ -110,5 +129,6 @@ def about():
 
 #-----------------------------------------------------------------------------
 
+db = Database().load()
 fEngine = FrameEngine()
 run(host='localhost', port=8080, debug=True)
