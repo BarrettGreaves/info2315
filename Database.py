@@ -6,7 +6,7 @@ save_name = "data.b"
 class Database:
 
 	def __init__(self):
-		self.user_lists = {"staff":[], "admin":[], "public":[], "rso":[]}
+		self.user_lists = {"staff":[], "admin":[], "public":[]}
 
 	def __str__(self):
 		s = ""
@@ -17,9 +17,9 @@ class Database:
 			s += "</br>"
 		return s
 
-	def account_exists(self, user_id):
+	def account_exists(self, name):
 		for user_type in self.user_lists:
-			if any(obj.user_id == user_id for obj in self.user_lists[user_type]):
+			if any(obj.name == name for obj in self.user_lists[user_type]):
 				return True
 		return False
 
@@ -40,9 +40,6 @@ class Database:
 
 	def add_public(self, obj):
 		return self.add("public", obj)
-
-	def add_rso(self, obj):
-		return self.add("rso", obj)
 #------------------------------------------------
 
 #---REMOVING FROM LISTS--------------------------
@@ -61,9 +58,6 @@ class Database:
 
 	def remove_public(self, obj):
 		return self.remove("public", obj)
-
-	def remove_rso(self, obj):
-		return self.remove("rso", obj)
 #------------------------------------------------
 
 #---SAVING/LOADING-------------------------------
@@ -81,7 +75,7 @@ class Database:
 		#if logs are persisent, overwrite file rather than removing
 		if os.path.exists(save_name):
 			os.remove(save_name)
-		self.user_lists = {"staff":[], "admin":[], "public":[], "rso":[]}
+		self.user_lists = {"staff":[], "admin":[], "public":[]}
 #------------------------------------------------
 
 

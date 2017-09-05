@@ -112,14 +112,18 @@ def do_register():
     password = "{}".format(request.forms.get('password'))
     rso = request.forms.get('rso')
     acc = PublicAccount(username, password, rso)
-    user_id = acc.get_id()
+    user_id = acc.user_id
     db.add_public(acc)
     db.save()
     return fEngine.load_and_render("registered", user_id=user_id)
 
 @get('/accounts')
 def view_accounts():
-    return str(db)
+    return str(db) + '''
+</br>
+<form action="/" method="get">
+    <input value="Home" type="submit" />
+</form>'''
 
 @get('/reset')
 def reset():
