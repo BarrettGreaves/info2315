@@ -86,12 +86,19 @@ def check_login(username, password):
 
 @route('/home')
 def index():
-    return fEngine.load_and_render("index")
+	cookie= request.get_cookie('visited')
+	if cookie=="nocookie":
+		return fEngine.load_and_render("index",user="")
+	return fEngine.load_and_render("index",user=db.find_user_cookie(cookie))
 
 # Display the login page
 @get('/login')
 def login():
     return fEngine.load_and_render("login")
+@get('/logout')
+def logout():
+	response.set_cookie('visited',"nocookie")
+	return fEngine.load_and_render("login")
 
 # Attempt the login
 @post('/login')
@@ -99,11 +106,16 @@ def do_login():
 	db.load()	
 	username = request.forms.get('username')
 	password = request.forms.get('password')
-	user=""
+	visits = request.get_cookie('visited')
+	
+	
+		
 	if db.account_exists(username) and db.account_verify(username,password):
 		
-		return fEngine.load_and_render("valid", type=db.get_type(username))
-	else:	
+		response.set_cookie('visited',db.get_user_cookie(username))
+		return fEngine.load_and_render("valid", username=username)
+	else:
+		response.set_cookie('visited',None)
 		return fEngine.load_and_render("invalid", reason="Username not found")
 
 @get('/register')
@@ -112,14 +124,17 @@ def register():
 
 @post('/register')
 def do_register():
-    username = request.forms.get('username')
-    password = "{}".format(request.forms.get('password'))
-    rso = request.forms.get('rso')
-    acc = PublicAccount(username, password, rso)
-    user_id = acc.user_id
-    db.add_public(acc)
-    db.save()
-    return fEngine.load_and_render("registered", user_id=user_id)
+	username = request.forms.get('username')
+	password = "{}".format(request.forms.get('password'))
+	if db.account_exists(username):
+		return fEngine.load_and_render("invalid", reason="account existed")
+	else:
+		rso = request.forms.get('rso')
+		acc = PublicAccount(username, password, rso)
+		user_id = acc.user_id
+		db.add_public(acc)
+		db.save()
+		return fEngine.load_and_render("registered", user_id=user_id)
 
 @get('/accounts')
 def view_accounts():

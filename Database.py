@@ -38,7 +38,19 @@ class Database:
 			if obj.name == name:
 				return obj.user_id
 		return ""
-	
+	def get_user_cookie(self,name):
+		for user_type in self.user_lists:
+			for obj in self.user_lists[user_type]:
+				if obj.name == name:
+					return obj.cookie
+		return None
+	def find_user_cookie(self,cookie):
+		for user_type in self.user_lists:
+			for obj in self.user_lists[user_type]:
+				if obj.cookie == cookie:
+					return obj.name
+		return None
+		
 
 
 #---ADDING TO LISTS------------------------------
