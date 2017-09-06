@@ -22,6 +22,23 @@ class Database:
 			if any(obj.name == name for obj in self.user_lists[user_type]):
 				return True
 		return False
+	def account_verify(self,name,password):
+		for user_type in self.user_lists:
+			for obj in self.user_lists[user_type]:
+				if obj.name == name:
+					return obj.verify_password(password)
+	def get_type(self,name):
+		for user_type in self.user_lists:
+			for obj in self.user_lists[user_type]:
+				if obj.name == name:
+					return user_type
+		return "error"
+	def get_user_id(self,name):
+		for obj in self.user_lists[user_type]:
+			if obj.name == name:
+				return obj.user_id
+		return ""
+	
 
 
 #---ADDING TO LISTS------------------------------

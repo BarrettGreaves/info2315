@@ -1,4 +1,5 @@
 from bottle import route, get, run, post, request, redirect, static_file
+from bottle import request, response
 from Crypto.Hash import MD5
 import re
 import numpy as np
@@ -82,6 +83,7 @@ def check_login(username, password):
 #-----------------------------------------------------------------------------
 # Homepage
 @route('/')
+
 @route('/home')
 def index():
     return fEngine.load_and_render("index")
@@ -94,13 +96,15 @@ def login():
 # Attempt the login
 @post('/login')
 def do_login():
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    err_str, login = check_login(username, password)
-    if login: 
-        return fEngine.load_and_render("valid", flag=err_str)
-    else:
-        return fEngine.load_and_render("invalid", reason=err_str)
+	db.load()	
+	username = request.forms.get('username')
+	password = request.forms.get('password')
+	user=""
+	if db.account_exists(username) and db.account_verify(username,password):
+		
+		return fEngine.load_and_render("valid", type=db.get_type(username))
+	else:	
+		return fEngine.load_and_render("invalid", reason="Username not found")
 
 @get('/register')
 def register():
@@ -144,4 +148,4 @@ def about():
 
 db = Database().load()
 fEngine = FrameEngine()
-run(host='localhost', port=8080, debug=True)
+run(host='localhost', port=8081, debug=True)
