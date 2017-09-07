@@ -65,20 +65,17 @@ def serve_js(js):
 # Check the login credentials
 def check_login(username, password):
     login = False
-
-
-    if username != "admin": # Wrong Username
-        err_str = "Incorrect Username"
+    acc = db.get_account(username)
+    if not acc: #account not found
+        err_str = "Account does not exist"
         return err_str, login
-    
-    if password != "password":
-        err_str = "Incorrect Password"
+    if not acc.verify_password(password):
+        err_str = "Incorrect password"
         return err_str, login
+    usr = acc #ok bc method only allowed if usr == None
+    err_str, login = "Logged in", True
+    return err_str, login
 
-    login_string = "Logged in!"
-    login = True
-    return login_string, login
-    
 #-----------------------------------------------------------------------------
 # Homepage
 @route('/')
@@ -143,5 +140,6 @@ def about():
 #-----------------------------------------------------------------------------
 
 db = Database().load()
+usr = None
 fEngine = FrameEngine()
 run(host='localhost', port=8080, debug=True)
