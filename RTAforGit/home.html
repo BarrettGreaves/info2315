@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>SMART GOALS</title>
+        <link rel="stylesheet" href="webpage.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" ></script>
+        <script src="web-javascript.js"></script>
+    </head>
+    <body>
+        <button type="button" id="reveal-nav">&#8801</button>
+        <nav>
+            <ul id="nav-section">
+                <li><img src="rta.jpg" alt="GOL.ED" id="logo" style="width: 210px;"></li>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="smartgoals.html">About</a></li>
+            </ul>
+            <ul id="secondary-nav-section">
+                <li>(C) RTA</li>
+                <li>Updated: September 2017</li>
+            </ul>
+        </nav>
+             <div class="container">
+         <section class="headline">
+             </div>
+        <div id="infomation-GOL.ED">
+            <h1>Welcome to the Road Traffic Authority</h1>
+            <p>The Roat Traffic Authority (RTA) is a NSW government regulated website regulating the operations and programs on our roads to ensure the safety of the public. Here you can register your vehicle, apply or renew your license or register your damaged vehicle.</p>
+        </div>
+        <section class="form-sign-in">
+            <div class="signup">
+                <h2>Sign Up</h2>
+                <form action="/" method="post">
+                    <div class="field-wrap">
+                        <label>First Name<span class="req">*</span></label>
+                        <input type="text" required autocomplete="off" />
+                    </div>
+                    <div class="field-wrap">
+                        <label>Last Name<span class="req">*</span></label>
+                        <input type="text"required autocomplete="off"/>
+                    </div>
+                    <div class="field-wrap">
+                        <label>Email Address<span class="req"email
+                        <label>Username<span class="req">*</span></label>
+                        <input type="text"required autocomplete="off"/>
+                    </div>
+                    <div class="field-wrap">
+                        <label>Contact Number<span class="req">*</span></label>
+                        <input type="text"required autocomplete="off"/>
+                    </div>
+                    <div class="field-wrap">
+                        <label>Password<span class="req">*</span></label>
+                        <input type="password"required autocomplete="off"/>
+                    </div>
+                    <div class="field-wrap">
+                        <label>Confirm Password<span class="req">*</span></label>
+                        <input type="password"required autocomplete="off"/>
+                    </div>
+                      <input type="checkbox" name="vehicle" value="Bike"> I am a Road Safety Officer<br>
+                    <button type="submit" class="button button-block" onclick="window.location.href='profile.html'"/>Get Started</button>
+                </form>
+            </div>
+            <div class="login">
+                <h2>Login</h2>
+                <form action="/" method="post">
+                    <div class="field-wrap">
+                        <label>Username<span class="req">*</span></label>
+                        <input type="text"required autocomplete="off"/>
+                    </div>
+                    <div class="field-wrap">
+                        <label>Password<span class="req">*</span></label>
+                        <input type="password"required autocomplete="off"/>
+                    </div>
+                    <button class="button button-block" onclick="window.location.href='profile.html'">Log In</button>
+                </form>
+            </div>
+        </section>
+    </body>
+</html>
