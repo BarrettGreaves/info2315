@@ -100,3 +100,4 @@ ENV/
 
 #database save file
 data.b
+.DS_Store

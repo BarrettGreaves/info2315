@@ -1,5 +1,4 @@
-from bottle import route, get, run, post, request, redirect, static_file
-from bottle import request, response
+from bottle import route, get, run, post, request, response, redirect, static_file
 from Crypto.Hash import MD5
 import re
 import numpy as np
@@ -80,10 +79,9 @@ def check_login(username, password):
 #-----------------------------------------------------------------------------
 # Homepage
 @route('/')
-
 @route('/home')
 def index():
-	cookie= request.get_cookie('visited')
+	cookie = request.get_cookie('visited')
 	if cookie=="nocookie":
 		return fEngine.load_and_render("index",user="")
 	return fEngine.load_and_render("index",user=db.find_user_cookie(cookie))
@@ -92,6 +90,7 @@ def index():
 @get('/login')
 def login():
     return fEngine.load_and_render("login")
+
 @get('/logout')
 def logout():
 	response.set_cookie('visited',"nocookie")
@@ -104,11 +103,8 @@ def do_login():
 	username = request.forms.get('username')
 	password = request.forms.get('password')
 	visits = request.get_cookie('visited')
-	
-	
 		
 	if db.account_exists(username) and db.account_verify(username,password):
-		
 		response.set_cookie('visited',db.get_user_cookie(username))
 		return fEngine.load_and_render("valid", username=username)
 	else:
@@ -125,13 +121,12 @@ def do_register():
 	password = "{}".format(request.forms.get('password'))
 	if db.account_exists(username):
 		return fEngine.load_and_render("invalid", reason="account existed")
-	else:
-		rso = request.forms.get('rso')
-		acc = PublicAccount(username, password, rso)
-		user_id = acc.user_id
-		db.add_public(acc)
-		db.save()
-		return fEngine.load_and_render("registered", user_id=user_id)
+	rso = request.forms.get('rso')
+	acc = PublicAccount(username, password, rso)
+	user_id = acc.user_id
+	db.add_public(acc)
+	db.save()
+	return fEngine.load_and_render("registered", user_id=user_id)
 
 @get('/accounts')
 def view_accounts():
@@ -161,4 +156,4 @@ def about():
 db = Database().load()
 usr = None
 fEngine = FrameEngine()
-run(host='localhost', port=8081, debug=True)
+run(host='localhost', port=8080, debug=True)
