@@ -1,4 +1,5 @@
 from bottle import route, get, run, post, request, redirect, static_file
+from bottle import request, response
 from Crypto.Hash import MD5
 import re
 import numpy as np
@@ -79,25 +80,40 @@ def check_login(username, password):
 #-----------------------------------------------------------------------------
 # Homepage
 @route('/')
+
 @route('/home')
 def index():
-    return fEngine.load_and_render("index")
+	cookie= request.get_cookie('visited')
+	if cookie=="nocookie":
+		return fEngine.load_and_render("index",user="")
+	return fEngine.load_and_render("index",user=db.find_user_cookie(cookie))
 
 # Display the login page
 @get('/login')
 def login():
     return fEngine.load_and_render("login")
+@get('/logout')
+def logout():
+	response.set_cookie('visited',"nocookie")
+	return fEngine.load_and_render("login")
 
 # Attempt the login
 @post('/login')
 def do_login():
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    err_str, login = check_login(username, password)
-    if login: 
-        return fEngine.load_and_render("valid", flag=err_str)
-    else:
-        return fEngine.load_and_render("invalid", reason=err_str)
+	db.load()	
+	username = request.forms.get('username')
+	password = request.forms.get('password')
+	visits = request.get_cookie('visited')
+	
+	
+		
+	if db.account_exists(username) and db.account_verify(username,password):
+		
+		response.set_cookie('visited',db.get_user_cookie(username))
+		return fEngine.load_and_render("valid", username=username)
+	else:
+		response.set_cookie('visited',None)
+		return fEngine.load_and_render("invalid", reason="Username not found")
 
 @get('/register')
 def register():
@@ -105,14 +121,17 @@ def register():
 
 @post('/register')
 def do_register():
-    username = request.forms.get('username')
-    password = "{}".format(request.forms.get('password'))
-    rso = request.forms.get('rso')
-    acc = PublicAccount(username, password, rso)
-    user_id = acc.user_id
-    db.add_public(acc)
-    db.save()
-    return fEngine.load_and_render("registered", user_id=user_id)
+	username = request.forms.get('username')
+	password = "{}".format(request.forms.get('password'))
+	if db.account_exists(username):
+		return fEngine.load_and_render("invalid", reason="account existed")
+	else:
+		rso = request.forms.get('rso')
+		acc = PublicAccount(username, password, rso)
+		user_id = acc.user_id
+		db.add_public(acc)
+		db.save()
+		return fEngine.load_and_render("registered", user_id=user_id)
 
 @get('/accounts')
 def view_accounts():
@@ -142,4 +161,4 @@ def about():
 db = Database().load()
 usr = None
 fEngine = FrameEngine()
-run(host='localhost', port=8080, debug=True)
+run(host='localhost', port=8081, debug=True)
