@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>My Profile</title>
+        <link rel="stylesheet" href="/css/webpage.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" ></script>
+        <script src="web-javascript.js"></script>
+    </head>
+    <body>
+        <button type="button" id="reveal-nav">&#8801</button>
+        <nav>
+            <ul id="nav-section">
+                <li> <img src="img/rta.jpg" alt="GOL.ED" id="logo"></li>
+				<li><a href="home">Home</a></li>
+				<li><a href="/logout">Logout</a></li>
+                <li><a href="/publicProfile">Profile</a></li>
+            </ul>
+            <ul id="secondary-nav-section">
+                <li>(C) RTA</li>
+                <li>Updated: September 2017</li>
+            </ul>
+        </nav>
+        <button type="button" onclick="window.location.href='home'" id="logout">Log Out</button>
+        <h1>My Profile</h1>
+        <h2> My Details </h2>
+        <p>	<b>Username:</b>
+            <br><b>License Information:</b>
+            <br><b>Vehicle Registration Information:</b>
+            <br><b>Number of Demerit Points:</b>
+        </p>
+
+		<button type="button" onclick="window.location.href='applyLicense';">Apply for License</button>
+		<button type="button" onclick="window.location.href='renewLicense';">Renew License</button>
+        <button type="button" onclick="window.location.href='registerVehicle';">Register Vehicle</button>
+		<button type="button" onclick="window.location.href='viewFines';">View Fines and Demerit Points</button>
+		<button type="button" onclick="window.location.href='vehicleSale';">Notify Sale of Vehicle</button>
+		<button type="button" onclick="window.location.href='destroyed';">List Vehicle as Destroyed</button>
+		<button type="button" onclick="alert('Change Password')">Change Password</button>
+    </body>
+</html>
