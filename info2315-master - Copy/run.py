@@ -5,6 +5,10 @@ import re
 import numpy as np
 from Database import Database
 from Accounts import PublicAccount
+from Application import Application
+from ApplicationDatabase import ApplicationDatabase
+from Vehicle import Vehicle
+from VehicleDatabase import VehicleDatabase
 
 #-----------------------------------------------------------------------------
 # This class loads html files from the "template" directory and formats them using Python.
@@ -61,21 +65,8 @@ def serve_css(css):
 def serve_js(js):
     return static_file(js, root='js/')
 
-#-----------------------------------------------------------------------------
 
-# Check the login credentials
-def check_login(username, password):
-    login = False
-    acc = db.get_account(username)
-    if not acc: #account not found
-        err_str = "Account does not exist"
-        return err_str, login
-    if not acc.verify_password(password):
-        err_str = "Incorrect password"
-        return err_str, login
-    usr = acc #ok bc method only allowed if usr == None
-    err_str, login = "Logged in", True
-    return err_str, login
+
 
 #-----------------------------------------------------------------------------
 # Homepage
@@ -84,18 +75,31 @@ def check_login(username, password):
 @route('/home')
 def index():
 	cookie= request.get_cookie('visited')
-	if cookie=="nocookie":
+
+	if cookie=="":
 		return fEngine.load_and_render("home")
-	return fEngine.load_and_render("home",user=db.find_user_cookie(cookie))
+	else:
+		username=db.find_user_cookie(cookie)
+		type=db.get_type(username)
+		if type=="public":
+			if db.get_account(username).rso!="true":
+				return fEngine.load_and_render("publicAccount", username=username)
+			else:
+				return fEngine.load_and_render("safetyOfficerAccount", username=username)
+		if type=="staff":
+			return fEngine.load_and_render("staffAccount", username=username)
+
+
+	return fEngine.load_and_render("home")
 
 # Display the login page
 @get('/login')
 def login():
-    return fEngine.load_and_render("login")
+    return fEngine.load_and_render("home")
 @get('/logout')
 def logout():
-	response.set_cookie('visited',"nocookie")
-	return fEngine.load_and_render("login")
+	response.set_cookie('visited',"")
+	return fEngine.load_and_render("home")
 
 # Attempt the login
 @post('/login')
@@ -104,12 +108,21 @@ def do_login():
 	username = request.forms.get('username')
 	password = request.forms.get('password')
 	visits = request.get_cookie('visited')
-
 	if db.account_exists(username) and db.account_verify(username,password):
 		response.set_cookie('visited',db.get_user_cookie(username))
-		return fEngine.load_and_render("valid", username=username)
+		type=db.get_type(username)
+		if type=="public":
+			if db.get_account(username).rso==False:
+				return fEngine.load_and_render("publicAccount", username=username)
+			else:
+				return fEngine.load_and_render("safetyOfficerAccount", username=username)
+		if type=="staff":
+			return fEngine.load_and_render("staffAccount", username=username)
+		return fEngine.load_and_render("publicAccount", username=username)
+
+
 	else:
-		#response.set_cookie('visited',None)
+		response.set_cookie('visited',"")
 		return fEngine.load_and_render("invalid", reason="Username not found")
 
 @get('/register')
@@ -146,15 +159,15 @@ def reset():
 #Display Account page
 @get('/publicAccount')
 def about():
-    return fEngine.load_and_render("publicAccount")
+    return fEngine.load_and_render("publicAccount",username="")
 
 @get('/staffAccount')
 def about():
-    return fEngine.load_and_render("staffAccount")
+    return fEngine.load_and_render("staffAccount",username="")
 
 @get('/safetyOfficerAccount')
 def about():
-    return fEngine.load_and_render("safetyOfficerAccount")
+    return fEngine.load_and_render("safetyOfficerAccount",username="")
 
 #Display license application page
 @get('/applyLicense')
@@ -172,8 +185,13 @@ def do_license():
 	postcode = request.forms.get('postcode')
 	email = request.forms.get('email')
 	number = request.forms.get('number')
-	return fEngine.load_and_render("standardUser/licenseApplied")
-
+	cookie= request.get_cookie('visited')
+	user=db.find_user_cookie(cookie)
+	if db.get_type(user)=="public":
+		app= Application(user, givenName,surname,dob,address,postcode,email,number)
+		adb.add_application(app)
+		return fEngine.load_and_render("standardUser/licenseApplied")
+	return fEngine.load_and_render("home")
 #Display Vehicle Registration page
 @get('/registerVehicle')
 def registerVehicle():
@@ -191,6 +209,8 @@ def do_registerVehicle():
 	postcode = request.forms.get('postcode')
 	purchase = request.forms.get('purchase')
 	number = request.forms.get('number')
+	vec=Vehicle(user,vehicleType,rego,make,model,licence,address,postcode,purchase,number)
+
 	return fEngine.load_and_render("standardUser/registeredVehicle")
 
 #Display current fines
@@ -279,7 +299,11 @@ def do_fines():
 	return fEngine.load_and_render("rsoUser/demerit")
 
 
+
 #-----------------------------------------------------------------------------
+
+adb=ApplicationDatabase().load()
+vdb=VehicleDatabase().load()
 db = Database().load()
 usr = None
 fEngine = FrameEngine()
