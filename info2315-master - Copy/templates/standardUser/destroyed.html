@@ -1,21 +1,46 @@
-Notify Destruction of Vehicle
-</p>
-<p>
-<form action="/destroyed" method="post">
-</br>
-    Registration: <input name="rego" type="text">
-</br>
-    Cause of Destruction:
-    <textarea name="message" rows="10" cols="30">
-    </textarea>
-</br>
-    Suburb of Incident: <input name="suburb" type="text">
-</br>
-    Road of Incident: <input name="road" type="text">
-</br>
-    Were Police Notified: <input name="police" type="radio"> Yes <input name="police" type="radio"> No
-</br>
-    <input value="Submit Application for Approval" type="submit" />
-</form>
-</p>
-</center>
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8">
+		<title>Apply for a License</title>
+        <link rel="stylesheet" href="/css/webpage.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" ></script>
+        <script src="web-javascript.js"></script>
+    </head>
+    <body>
+        <button type="button" id="reveal-nav">&#8801</button>
+        <nav>
+            <ul id="nav-section">
+                <li> <img src="img/rta.jpg" alt="GOL.ED" id="logo"></li>
+				<li><a href="home">Home</a></li>
+				<li><a href="/logout">Logout</a></li>
+                <li><a href="/publicAccount">Return</a></li>
+            </ul>
+            <ul id="secondary-nav-section">
+                <li>(C) RTA</li>
+                <li>Updated: September 2017</li>
+            </ul>
+        </nav>
+        <button type="button" onclick="window.location.href='home'" id="logout">Log Out</button>
+
+		<h2>List Vehicle as Destroyed</h2>
+		<form action="/destroyed" method="post">
+		    Registration: <input name="rego" type="text">
+		</br>
+		    Cause of Destruction:
+		</br>
+		    <textarea name="message" rows="10" cols="30">
+		    </textarea>
+		</br>
+		    Suburb of Incident: <input name="suburb" type="text">
+		</br>
+		    Road of Incident: <input name="road" type="text">
+		</br>
+		    Were Police Notified: <input name="police" type="radio"> Yes <input name="police" type="radio"> No
+		</br>
+		    <input value="Submit Application for Approval" type="submit" />
+		</form>
+		</p>
+		</center>
+	</body>
+</html>
