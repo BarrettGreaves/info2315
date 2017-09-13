@@ -52,12 +52,6 @@ class Database:
 		return None
 		
 
-	def get_account(self, name):
-		for user_type in self.user_lists:
-			for obj in self.user_lists[user_type]:
-				if obj.name == name:
-					return obj
-		return None
 
 #---ADDING TO LISTS------------------------------
 	def add(self, lst, obj):

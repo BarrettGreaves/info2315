@@ -1,9 +1,14 @@
-from bottle import route, get, run, post, request, response, redirect, static_file
+from bottle import route, get, run, post, request, redirect, static_file
+from bottle import request, response
 from Crypto.Hash import MD5
 import re
 import numpy as np
 from Database import Database
 from Accounts import PublicAccount
+from Application import Application
+from ApplicationDatabase import ApplicationDatabase
+
+from time import gmtime, strftime
 
 #-----------------------------------------------------------------------------
 # This class loads html files from the "template" directory and formats them using Python.
@@ -65,35 +70,39 @@ def serve_js(js):
 # Check the login credentials
 def check_login(username, password):
     login = False
-    acc = db.get_account(username)
-    if not acc: #account not found
-        err_str = "Account does not exist"
-        return err_str, login
-    if not acc.verify_password(password):
-        err_str = "Incorrect password"
-        return err_str, login
-    usr = acc #ok bc method only allowed if usr == None
-    err_str, login = "Logged in", True
-    return err_str, login
 
+
+    if username != "admin": # Wrong Username
+        err_str = "Incorrect Username"
+        return err_str, login
+    
+    if password != "password":
+        err_str = "Incorrect Password"
+        return err_str, login
+
+    login_string = "Logged in!"
+    login = True
+    return login_string, login
+    
 #-----------------------------------------------------------------------------
 # Homepage
 @route('/')
+
 @route('/home')
 def index():
-	cookie = request.get_cookie('visited')
-	if cookie=="nocookie":
+	cookie= request.get_cookie('visited')
+	if cookie=="":
 		return fEngine.load_and_render("index",user="")
+	
 	return fEngine.load_and_render("index",user=db.find_user_cookie(cookie))
 
 # Display the login page
 @get('/login')
 def login():
     return fEngine.load_and_render("login")
-
 @get('/logout')
 def logout():
-	response.set_cookie('visited',"nocookie")
+	response.set_cookie('visited',"")
 	return fEngine.load_and_render("login")
 
 # Attempt the login
@@ -103,12 +112,15 @@ def do_login():
 	username = request.forms.get('username')
 	password = request.forms.get('password')
 	visits = request.get_cookie('visited')
+	
+	
 		
 	if db.account_exists(username) and db.account_verify(username,password):
+		
 		response.set_cookie('visited',db.get_user_cookie(username))
 		return fEngine.load_and_render("valid", username=username)
 	else:
-		response.set_cookie('visited',None)
+		response.set_cookie('visited',"")
 		return fEngine.load_and_render("invalid", reason="Username not found")
 
 @get('/register')
@@ -121,12 +133,57 @@ def do_register():
 	password = "{}".format(request.forms.get('password'))
 	if db.account_exists(username):
 		return fEngine.load_and_render("invalid", reason="account existed")
-	rso = request.forms.get('rso')
-	acc = PublicAccount(username, password, rso)
-	user_id = acc.user_id
-	db.add_public(acc)
-	db.save()
-	return fEngine.load_and_render("registered", user_id=user_id)
+	else:
+		rso = request.forms.get('rso')
+		acc = PublicAccount(username, password, rso)
+		user_id = acc.user_id
+		db.add_public(acc)
+		db.save()
+		return fEngine.load_and_render("registered", user_id=user_id)
+# Apply for license
+@get('/apply_license')
+def apply_license():
+    return fEngine.load_and_render("apply_license")
+@get('/accept_revoke')
+def accept_revoke():
+    return fEngine.load_and_render("accept_revoke")
+@post('/accept_revoke')
+def do_accept_revoke():
+	id=request.forms.get('id')
+	ar=request.forms.get('accept')
+	if ar:
+		adb.approve_application(adb.get_application(id))
+	else:
+		adb.revoke_application(adb.get_application(id))
+	
+	
+	
+	
+    return fEngine.load_and_render("accept_revoke")
+@post('/apply_license')
+def do_apply_license():
+	
+	license = request.forms.get('license')
+	description = request.forms.get('description')
+	cookie= request.get_cookie('visited')
+	user=db.find_user_cookie(cookie)
+	
+	if user is not None:
+		app= Application(user,license,description,strftime("%Y-%m-%d %H:%M:%S", gmtime()))	
+		adb.add_application(app)
+	
+	adb.save()
+	adb.load()
+	print(str(adb))
+	adb.save()
+	return fEngine.load_and_render("apply_license")	
+@get('/applications')
+def applications():
+	
+	adb.load()
+	return str(adb)
+
+
 
 @get('/accounts')
 def view_accounts():
@@ -152,8 +209,8 @@ def about():
     return fEngine.load_and_render("about", garble=np.random.choice(garble))
 
 #-----------------------------------------------------------------------------
-
+adb=ApplicationDatabase().load()
 db = Database().load()
-usr = None
+
 fEngine = FrameEngine()
-run(host='localhost', port=8080, debug=True)
+run(host='localhost', port=8082, debug=True)
