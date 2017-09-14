@@ -7,7 +7,7 @@ class Database:
 
 	def __init__(self):
 		self.user_lists = {"staff":[], "admin":[], "public":[]}
-
+		
 	def __str__(self):
 		s = ""
 		for key in self.user_lists:

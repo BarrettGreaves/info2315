@@ -8,7 +8,7 @@ class Accounts:
 		self.salt = secrets.token_hex(8)
 		self.sh_password = MD5.new((password + self.salt).encode()).hexdigest()
 		self.access = access
-		self.cookie = MD5.new((name + password + self.salt).encode()).hexdigest()
+		self.cookie= MD5.new((name+password + self.salt).encode()).hexdigest()
 
 	def verify_password(self, password):
 		input_hash = MD5.new((password + self.salt).encode()).hexdigest()
@@ -22,7 +22,7 @@ class Accounts:
 
 class PublicAccount(Accounts):
 
-	def __init__(self, name, password, rso=False):
+	def __init__(self, name, password, rso):
 		super().__init__(name, password, 0)
 		self.user_id = secrets.token_hex(4)
 		self.rso = rso
