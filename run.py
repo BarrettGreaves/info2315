@@ -10,7 +10,7 @@ from ApplicationDatabase import ApplicationDatabase
 from Vehicle import Vehicle
 from VehicleDatabase import VehicleDatabase
 from bottle import run, get, post, request, response
-from Backend import Permissions
+#from Backend import Permissions
 
 import requests
 import json
@@ -314,6 +314,5 @@ def do_fines():
 
 usr = None
 fEngine = FrameEngine()
-backend = Backed().load()
 
 run(host=host_addr, port=frontend_port)
