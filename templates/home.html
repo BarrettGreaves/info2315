@@ -37,22 +37,15 @@
         <section class="form-sign-in">
             <div class="signup">
                 <h2>Sign Up</h2>
-                <form action="/register" method="post">
-                    <div class="field-wrap">
-                        <label>Username<span class="req">*</span></label>
-                        <input type="text" required autocomplete="off"name="username" />
-                    </div>
-                    <div class="field-wrap">
-                        <label>Password<span class="req">*</span></label>
-                        <input type="password"required autocomplete="off"name="password"/>
-                    </div>
-                    <div class="field-wrap">
-                        <label>Confirm Password<span class="req">*</span></label>
-                        <input type="password"required autocomplete="off"name="confirmPassword"/>
-                    </div>
-                      <input type="checkbox" name="vehicle" value="Bike"> I am a Road Safety Officer<br>
-                    <button type="submit" class="button button-block" onclick="window.location.href='register.html'"/>Get Started</button>
-                </form>
+               <form action="/register" method="post">
+    Username: <input name="username" type="text" /></br>
+
+    Password: <input name="password" type="password" /></br>
+	<input type="radio" name="rso" value=True> RTO<br>
+	<input type="radio" name="rso" value=False>Public<br>
+
+    <input value="Create account" type="submit" />
+</form>
             </div>
             <div class="login">
                 <h2>Login</h2>

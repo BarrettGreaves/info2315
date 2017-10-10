@@ -7,7 +7,7 @@ class Database:
 
 	def __init__(self):
 		self.user_lists = {"staff":[], "admin":[], "public":[]}
-		
+
 	def __str__(self):
 		s = ""
 		for key in self.user_lists:
@@ -50,7 +50,7 @@ class Database:
 				if obj.cookie == cookie:
 					return obj.name
 		return None
-		
+
 
 	def get_account(self, name):
 		for user_type in self.user_lists:
@@ -112,11 +112,3 @@ class Database:
 			os.remove(save_name)
 		self.user_lists = {"staff":[], "admin":[], "public":[]}
 #------------------------------------------------
-
-
-
-
-
-
-
-
