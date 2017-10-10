@@ -4,11 +4,16 @@ from Crypto.Hash import MD5
 import re
 import numpy as np
 from Database import Database
-from Accounts import PublicAccount
+from Accounts import PublicAccount, AdminAccount, StaffAccount, Accounts
 from Application import Application
 from ApplicationDatabase import ApplicationDatabase
 from Vehicle import Vehicle
 from VehicleDatabase import VehicleDatabase
+from bottle import run, get, post, request, response
+from Backend import Permissions
+
+import requests
+import json
 
 #-----------------------------------------------------------------------------
 # This class loads html files from the "template" directory and formats them using Python.
@@ -65,41 +70,27 @@ def serve_css(css):
 def serve_js(js):
     return static_file(js, root='js/')
 
-
-
 host_addr = "localhost"
 frontend_port = 8080
 backend_port = 8081
 
 backend_str = "http://{host}:{port}".format(host=host_addr, port=backend_port)
+
 #-----------------------------------------------------------------------------
 # Homepage
 @route('/')
 
 @route('/home')
 def index():
-	cookie= request.get_cookie('visited')
-	
-	if cookie=="":
 		return fEngine.load_and_render("home")
-	else:
-		username=db.find_user_cookie(cookie)
-		type=db.get_type(username)
-		if type=="public":
-			if db.get_account(username).rso!="True":
-				return fEngine.load_and_render("publicAccount", username=username)
-			else:
-				return fEngine.load_and_render("safetyOfficerAccount", username=username)
-		if type=="staff":
-			return fEngine.load_and_render("staffAccount", username=username)
-	
-	
-	return fEngine.load_and_render("home")
+
+
 
 # Display the login page
 @get('/login')
 def login():
     return fEngine.load_and_render("home")
+
 @get('/logout')
 def logout():
 	response.set_cookie('visited',"")
@@ -108,26 +99,24 @@ def logout():
 # Attempt the login
 @post('/login')
 def do_login():
-	db.load()	
 	username = request.forms.get('username')
 	password = request.forms.get('password')
-	visits = request.get_cookie('visited')
-	if db.account_exists(username) and db.account_verify(username,password):
-		response.set_cookie('visited',db.get_user_cookie(username))
-		type=db.get_type(username)
-		if type=="public":
-			if db.get_account(username).rso!="True":
-				return fEngine.load_and_render("publicAccount", username=db.get_account(username).rso)
-			else:
-				return fEngine.load_and_render("safetyOfficerAccount", username=username)
-		if type=="staff":
-			return fEngine.load_and_render("staffAccount", username=username)
-		return fEngine.load_and_render("publicAccount", username=username)
-		
-		
-	else:
+
+	responses = requests.post("{target}/api/login/{username}/{password}"
+    	.format(target=backend_str, username=username, password=password))
+	result = json.loads(responses.text)
+	if result["key"]=="fail":
 		response.set_cookie('visited',"")
 		return fEngine.load_and_render("invalid", reason="Username not found")
+	else:
+		response.set_cookie('visited', result["cookie"])
+		if result["type"]=="public":
+			if result["rso"]=="False":
+				return fEngine.load_and_render("publicAccount", username=username)
+			else:
+				return fEngine.load_and_render("safetyOfficerAccount", username=username)
+		else:
+			return fEngine.load_and_render("staffAccount", username=username)
 
 @get('/register')
 def register():
@@ -138,27 +127,25 @@ def do_register():
 	username = request.forms.get('username')
 	password = "{}".format(request.forms.get('password'))
 	rso = request.forms.get('rso')
-	if db.account_exists(username):
-		return fEngine.load_and_render("invalid", reason="account existed")
+
+	response = requests.post("{target}/api/register/{username}/{password}/{rso}"
+    	.format(target=backend_str, username=username, password=password,rso=rso))
+	result = json.loads(response.text)
+	bool = result["key"]
+
+	if(bool == True):
+		return fEngine.load_and_render("registered", user_id=username)
 	else:
-		
-		acc = PublicAccount(username, password, rso)
-		user_id = acc.user_id
-		db.add_public(acc)
-		db.save()
-		return fEngine.load_and_render("registered", user_id=user_id)
+		return fEngine.load_and_render("invalid", reason="account existed")
 
 @get('/accounts')
 def view_accounts():
-    return str(db) + '''
-</br>
-<form action="/" method="get">
-    <input value="Home" type="submit" />
-</form>'''
+	response = requests.post("{target}/api/viewaccount".format(target=backend_str))
+	return response.text
 
 @get('/reset')
 def reset():
-    db.reset()
+    response = requests.post("{target}/api/reset".format(target=backend_str))
     return fEngine.load_and_render("reset")
 
 #Display Account page
@@ -191,12 +178,14 @@ def do_license():
 	email = request.forms.get('email')
 	number = request.forms.get('number')
 	cookie= request.get_cookie('visited')
-	user=db.find_user_cookie(cookie)
-	if db.get_type(user)=="public":
-		app= Application(user, givenName,surname,dob,address,postcode,email,number)
-		adb.add_application(app)
+
+	responses = requests.post("{target}/api/applyLicense/{givenName}/{surname}/{dob}/{address}/{postcode}/{email}/{number}/{cookie}"
+    	.format(target=backend_str, givenName=givenName, surname=surname,dob=dob,address=address,postcode=postcode,email=email,number=number,cookie=cookie))
+	if responses.text=="success":
 		return fEngine.load_and_render("standardUser/licenseApplied")
-	return fEngine.load_and_render("home")
+	else:
+		fEngine.load_and_render("home")
+
 #Display Vehicle Registration page
 @get('/registerVehicle')
 def registerVehicle():
@@ -215,7 +204,7 @@ def do_registerVehicle():
 	purchase = request.forms.get('purchase')
 	number = request.forms.get('number')
 	vec=Vehicle(user,vehicleType,rego,make,model,licence,address,postcode,purchase,number)
-	
+
 	return fEngine.load_and_render("standardUser/registeredVehicle")
 
 #Display current fines
@@ -270,28 +259,26 @@ def do_renewLicense():
 	licence = request.forms.get('licence')
 	expired = request.forms.get('expired')
 	return fEngine.load_and_render("standardUser/renewalConfirmation")
+
 #STAFF
 #-----------------------------------------------------------------------------
 @get('/applicationApproval')
 def applicationApproval():
-	
-	return fEngine.load_and_render("staffUser/applicationapproval",ApplicationList=adb.display())
+	responses = requests.post("{target}/api/applicationApproval".format(target=backend_str))
+	ApplicationList= responses.text
+	return fEngine.load_and_render("staffUser/applicationapproval",ApplicationList=ApplicationList)
+
 @post('/applicationApproval')
 def applicationApproval():
 	id=request.forms.get('id')
-	ar=request.forms.get('accept')
-	
-	adb.approve_application(adb.get_application(id),ar)
-	
-	
-	adb.save()
-	
-	
-	
-	
-	return fEngine.load_and_render("staffUser/applicationapproval",ApplicationList=adb.display())
+	accept=request.forms.get('accept')
+	responses = requests.post("{target}/api/applicationApproval/{id}/{accept}"
+    	.format(target=backend_str, id=id,accept=accept))
 
+	responses = requests.post("{target}/api/applicationApproval".format(target=backend_str))
+	ApplicationList= responses.text
 
+	return fEngine.load_and_render("staffUser/applicationapproval",ApplicationList=ApplicationList)
 
 @get('/destructionApproval')
 def destructionApproval():
@@ -324,5 +311,9 @@ def do_fines():
 
 #-----------------------------------------------------------------------------
 
+
+usr = None
+fEngine = FrameEngine()
+backend = Backed().load()
 
 run(host=host_addr, port=frontend_port)
